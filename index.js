@@ -19,7 +19,6 @@ const client = new MongoClient(uri, {
     }
   });
 
-
   async function run() {
     try {
       // Connect the client to the server	(optional starting in v4.7)
@@ -28,15 +27,17 @@ const client = new MongoClient(uri, {
         // * DATABASE COLLECTIONS --------------->
         const userCollection = client.db('surveyDB').collection('users')
 
-
-
-        // ?GET ALL USER DATA -------->
+        // *GET ALL USER DATA ---------->
         app.get("/users", async(req, res) => {
-            // const users = req.body;
             const result = await userCollection.find().toArray()
             res.send(result)
         })
 
+        app.post("/users", async(req, res) =>{
+            const user = req.body;
+            const result = await userCollection.insertOne(user)
+            res.send(result)
+        })
 
 
       // Send a ping to confirm a successful connection
