@@ -107,8 +107,26 @@ const client = new MongoClient(uri, {
         app.get("/users/admin/:email", async(req, res) =>{
             const email = req.params.email;
             const query = { email: email };
-            const result = await userCollection.findOne(query);
-            res.send(result);
+           const user = await userCollection.findOne(query);
+            let admin = false;
+            if (user) {
+                admin = user?.role === "admin";
+            }
+            res.send({ admin });
+            console.log(admin);
+        })
+      
+        // GET SURVEYOR ----------->
+        app.get("/users/surveyor/:email", async(req, res) =>{
+            const email = req.params.email;
+            const query = { email: email };
+           const user = await userCollection.findOne(query);
+            let surveyor = false;
+            if (user) {
+                surveyor = user?.role === "surveyor";
+            }
+            res.send({ surveyor });
+            console.log("surveyor found" , surveyor);
         })
 
         // MAKE ADMIN ------------->
