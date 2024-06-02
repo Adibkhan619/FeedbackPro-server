@@ -70,11 +70,45 @@ const client = new MongoClient(uri, {
             res.send(result)
         })
 
+        // GET SURVEYOR SURVEYS BY EMAIL ------------->
         app.get("/surveys/:email", async(req, res) =>{
             const email = req.params.email
             const query = {email : email}
             const result = await surveyCollection.find(query).toArray()
             res.send(result)
+        })
+
+        // UPDATE SURVEY ----------->
+        app.patch("/survey/:id", async (req, res) => {
+            const item = req.body;
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    question: item.question,
+                    category: item.category,
+                    description: item.description,
+                    deadline: item.deadline,
+                },
+            };
+            const result = await surveyCollection.updateOne(filter, updatedDoc);
+            res.send(result);
+        });
+
+        // DELETE SURVEY ---------------------->
+        app.delete("/survey/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await surveyCollection.deleteOne(query);
+            res.send(result);
+        });
+
+        // GET ADMIN ----------->
+        app.get("/users/admin/:email", async(req, res) =>{
+            const email = req.params.email;
+            const query = { email: email };
+            const result = await userCollection.findOne(query);
+            res.send(result);
         })
 
         // MAKE ADMIN ------------->
