@@ -61,10 +61,19 @@ const client = new MongoClient(uri, {
             const result = await surveyCollection.find().toArray()
             res.send(result)
         })
-        app.get("/surveys/:id", async(req, res) =>{
+
+        // GET SURVEYS BY ID ---------->
+        app.get("/survey/:id", async(req, res) =>{
             const id = req.params.id
             const query = {_id: new ObjectId(id)}
             const result = await surveyCollection.findOne(query)
+            res.send(result)
+        })
+
+        app.get("/surveys/:email", async(req, res) =>{
+            const email = req.params.email
+            const query = {email : email}
+            const result = await surveyCollection.find(query).toArray()
             res.send(result)
         })
 
