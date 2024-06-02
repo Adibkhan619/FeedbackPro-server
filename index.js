@@ -26,6 +26,7 @@ const client = new MongoClient(uri, {
 
         //  DATABASE COLLECTIONS --------------->
         const userCollection = client.db('surveyDB').collection('users')
+        const surveyCollection = client.db('surveyDB').collection('surveys')
 
         // GET ALL USER DATA ---------->
         app.get("/users", async(req, res) => {
@@ -33,7 +34,7 @@ const client = new MongoClient(uri, {
             res.send(result)
         })
 
-        // Post user data ---------->
+        // POST USER DATA ---------->
         app.post("/users", async(req, res) =>{
             const user = req.body;
             const query = { email: user.email };
@@ -48,7 +49,26 @@ const client = new MongoClient(uri, {
             res.send(result)
         })
 
-        // make admin ------------->
+        // POST SURVEY ----------->
+        app.post("/surveys", async(req, res) => {
+            const survey = req.body
+            const result = await surveyCollection.insertOne(survey)
+            res.send(result)
+        })
+
+        // GET ALL SURVEY DATA --------->
+        app.get("/surveys", async(req, res) =>{
+            const result = await surveyCollection.find().toArray()
+            res.send(result)
+        })
+        app.get("/surveys/:id", async(req, res) =>{
+            const id = req.params.id
+            const query = {_id: new ObjectId(id)}
+            const result = await surveyCollection.findOne(query)
+            res.send(result)
+        })
+
+        // MAKE ADMIN ------------->
         app.patch("/users/admin/:id", async (req, res) => {
                 const id = req.params.id;
                 const filter = { _id: new ObjectId(id) };
@@ -65,7 +85,7 @@ const client = new MongoClient(uri, {
             }
         );
 
-        // Make surveyor ------------- >
+        // MAKE SURVEYOR ------------- >
         app.patch("/users/surveyor/:id", async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
