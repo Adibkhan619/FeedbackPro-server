@@ -27,6 +27,7 @@ const client = new MongoClient(uri, {
         //  DATABASE COLLECTIONS --------------->
         const userCollection = client.db('surveyDB').collection('users')
         const surveyCollection = client.db('surveyDB').collection('surveys')
+        const responseCollection = client.db('surveyDB').collection('responses')
 
         // GET ALL USER DATA ---------->
         app.get("/users", async(req, res) => {
@@ -83,42 +84,48 @@ const client = new MongoClient(uri, {
             const item = req.body;
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
-
-    //         const updateDoc = {}
-    // if (item.question || item.category || item.description || item.deadline) {
-    //   updateDoc.$set = {
-    //     ...(item.question && { question: item.question }),
-    //     ...(item.category && { category: item.category }),
-    //     ...(item.description && { description: item.description }),
-    //     ...(item.deadline && { deadline: item.deadline }),
-    //   };
-    // }
-    // if (item.incrementYes !== undefined || item.incrementNo !== undefined) {
-    //   updateDoc.$inc = {
-    //     ...(item.incrementYes !== undefined && { yes: item.incrementYes }),
-    //     ...(item.incrementNo !== undefined && { no: item.incrementNo }),
-    //   };
-    // }
-
             const updatedDoc = {
                 $set: {
                     question: item.question,
                     category: item.category,
                     description: item.description,
                     deadline: item.deadline,
-                    votedBy: item.votedBy
+                    votedBy: item.votedBy,
+                    id: item._id
                 },
 
                 $inc: {
                     voteCount: item.voteCount,
                     yes: item.Yes || 0,
                     no: item.No || 0,
+                    report: item.report || 0,
                     
                   }
             };
             const result = await surveyCollection.updateOne(filter, updatedDoc);
             res.send(result);
         });
+
+        // POST USER RESPONSE DATA ---------->
+        app.post("/response", async(req, res) => {
+            const response = req.body
+            const result = await responseCollection.insertOne(response)
+            res.send(result)
+        })
+
+        // GET USER RESPONSE DATA ---------->
+        app.get("/response", async(req, res) => {
+            const result = await responseCollection.find().toArray()
+            res.send(result)
+        })
+
+        // GET USER RESPONSE BY SURVEY ID ------------->
+        app.get("/response/:id", async(req,res) =>{
+            const id = req.params.id
+            const query = {id: id}
+            const result = await responseCollection.find(query).toArray()
+            res.send(result)
+        })
 
         // DELETE SURVEY ---------------------->
         app.delete("/survey/:id", async (req, res) => {
