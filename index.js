@@ -59,8 +59,10 @@ const client = new MongoClient(uri, {
 
         // GET ALL SURVEY DATA --------->
         app.get("/surveys", async(req, res) =>{
-            const result = await surveyCollection.find().toArray()
+            const sort = req.query.sort;
+            const result = await surveyCollection.find().sort({ voteCount: sort === 'asc' ? 1 : -1}).toArray()
             res.send(result)
+            console.log('look here',result);
         })
 
         // GET SURVEYS BY ID ---------->
