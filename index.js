@@ -83,13 +83,38 @@ const client = new MongoClient(uri, {
             const item = req.body;
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
+
+    //         const updateDoc = {}
+    // if (item.question || item.category || item.description || item.deadline) {
+    //   updateDoc.$set = {
+    //     ...(item.question && { question: item.question }),
+    //     ...(item.category && { category: item.category }),
+    //     ...(item.description && { description: item.description }),
+    //     ...(item.deadline && { deadline: item.deadline }),
+    //   };
+    // }
+    // if (item.incrementYes !== undefined || item.incrementNo !== undefined) {
+    //   updateDoc.$inc = {
+    //     ...(item.incrementYes !== undefined && { yes: item.incrementYes }),
+    //     ...(item.incrementNo !== undefined && { no: item.incrementNo }),
+    //   };
+    // }
+
             const updatedDoc = {
                 $set: {
                     question: item.question,
                     category: item.category,
                     description: item.description,
                     deadline: item.deadline,
+                    votedBy: item.votedBy
                 },
+
+                $inc: {
+                    voteCount: item.voteCount,
+                    yes: item.Yes || 0,
+                    no: item.No || 0,
+                    
+                  }
             };
             const result = await surveyCollection.updateOne(filter, updatedDoc);
             res.send(result);
