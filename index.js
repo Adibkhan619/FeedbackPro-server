@@ -91,6 +91,8 @@ const client = new MongoClient(uri, {
                     description: item.description,
                     deadline: item.deadline,
                     votedBy: item.votedBy,
+                    name:item.name,
+                    email:item.email,
                     id: item._id
                 },
 
