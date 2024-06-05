@@ -3,6 +3,7 @@ const app = express();
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
 require("dotenv").config();
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
@@ -28,9 +29,8 @@ async function run() {
         //  DATABASE COLLECTIONS --------------->
         const userCollection = client.db("surveyDB").collection("users");
         const surveyCollection = client.db("surveyDB").collection("surveys");
-        const responseCollection = client
-            .db("surveyDB")
-            .collection("responses");
+        const responseCollection = client.db("surveyDB").collection("responses");
+        const paymentCollection = client.db("surveyDB").collection("payments");
 
         // JWT API --------------->
         app.post("/jwt", async (req, res) => {
@@ -85,7 +85,7 @@ async function run() {
         });
 
         // POST SURVEY ----------->
-        app.post("/surveys", async (req, res) => {
+        app.post("/surveys", verifyToken, async (req, res) => {
             const survey = req.body;
             const result = await surveyCollection.insertOne(survey);
             res.send(result);
@@ -111,7 +111,7 @@ async function run() {
         });
 
         // GET SURVEYOR SURVEYS BY EMAIL ------------->
-        app.get("/surveys/:email", async (req, res) => {
+        app.get("/surveys/:email", verifyToken, async (req, res) => {
             const email = req.params.email;
             const query = { email: email };
             const result = await surveyCollection.find(query).toArray();
@@ -119,7 +119,7 @@ async function run() {
         });
 
         // UPDATE SURVEY ----------->
-        app.patch("/survey/:id", async (req, res) => {
+        app.patch("/survey/:id", verifyToken, async (req, res) => {
             const item = req.body;
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
@@ -154,7 +154,7 @@ async function run() {
         });
 
         // GET USER RESPONSE DATA ---------->
-        app.get("/response", async (req, res) => {
+        app.get("/response",   async (req, res) => {
             const result = await responseCollection.find().toArray();
             res.send(result);
         });
@@ -168,7 +168,7 @@ async function run() {
         });
 
         // DELETE SURVEY ---------------------->
-        app.delete("/survey/:id", async (req, res) => {
+        app.delete("/survey/:id", verifyToken, async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
             const result = await surveyCollection.deleteOne(query);
@@ -192,7 +192,7 @@ async function run() {
         });
 
         // GET SURVEYOR ----------->
-        app.get("/users/surveyor/:email", async (req, res) => {
+        app.get("/users/surveyor/:email", verifyToken, async (req, res) => {
             const email = req.params.email;
             const query = { email: email };
             const user = await userCollection.findOne(query);
@@ -205,7 +205,7 @@ async function run() {
         });
 
         // MAKE ADMIN ------------->
-        app.patch("/users/admin/:id", async (req, res) => {
+        app.patch("/users/admin/:id", verifyToken, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
             const updateDoc = {
@@ -218,7 +218,7 @@ async function run() {
         });
 
         // MAKE SURVEYOR ------------- >
-        app.patch("/users/surveyor/:id", async (req, res) => {
+        app.patch("/users/surveyor/:id", verifyToken, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
             const updateDoc = {
@@ -229,6 +229,37 @@ async function run() {
             const result = await userCollection.updateOne(filter, updateDoc);
             res.send(result);
         });
+
+        // PAYMENT INTENT -------------->
+        app.post('/create-payment-intent', async(req, res) => {
+            const {price} = req.body
+            const amount = parseInt(price * 100)
+            console.log(amount, 'amount inside paymentIntent');
+
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount : amount,
+                currency : 'usd',
+                payment_method_types: ['card']
+            })
+            res.send({
+                clientSecret: paymentIntent.client_secret
+            })
+        })
+
+        // POST PAYMENT INTO DB ------------>
+        app.post("/payments", async (req, res) => {
+            const payment = req.body;
+            const result = await paymentCollection.insertOne(payment)
+            console.log('payment info', payment);
+            res.send(result)
+        })
+
+        // GET PAYMENTS ---------->
+        app.get("/payments", async(req, res) => {
+            const result = await paymentCollection.find().toArray()
+            res.send(result)
+        })
+
 
         // Send a ping to confirm a successful connection
         //   await client.db("admin").command({ ping: 1 });
