@@ -107,7 +107,7 @@ async function run() {
             });
 
         // POST SURVEY ----------->
-        app.post("/surveys", verifyToken, async (req, res) => {
+        app.post("/surveys",  async (req, res) => {
             const survey = req.body;
             const result = await surveyCollection.insertOne(survey);
             res.send(result);
@@ -151,14 +151,14 @@ async function run() {
                     category: item.category,
                     description: item.description,
                     deadline: item.deadline,
-                    votedBy: item.votedBy,
                     name: item.name,
                     email: item.email,
                     id: item._id,
+                    array: item.comment
                 },
 
                 $inc: {
-                    voteCount: item.voteCount,
+                    voteCount: parseInt(item.voteCount),
                     yes: item.Yes || 0,
                     no: item.No || 0,
                     report: item.report || 0,
@@ -166,7 +166,17 @@ async function run() {
             };
             const result = await surveyCollection.updateOne(filter, updatedDoc);
             res.send(result);
+            console.log(result);
         });
+
+        app.patch("/survey/comment/:id", async(req, res) => {
+            const id = req.params.id
+            const query = {_id: new ObjectId(id)}
+            const result = await surveyCollection.updateOne(query, { $push: { comment: req.body } })
+            res.send(result)
+            
+
+        })
 
         // POST USER RESPONSE DATA ---------->
         app.post("/response", async (req, res) => {
