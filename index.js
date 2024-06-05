@@ -64,7 +64,7 @@ async function run() {
         };
 
         // GET ALL USER DATA ---------->
-        app.get("/users", verifyToken, async (req, res) => {
+        app.get("/users",  async (req, res) => {
             const result = await userCollection.find().toArray();
             res.send(result);
         });
@@ -83,6 +83,28 @@ async function run() {
             const result = await userCollection.insertOne(user);
             res.send(result);
         });
+
+        // GET USER BY EMAIL ------------->
+        app.get("/users/:email", async(req, res) => {
+            const id = req.params.id
+            const query = {email: email}
+            const result = await userCollection.findOne(query)
+            res.send(result)
+        })
+
+        // MAKE PRO-USER ------------>
+        app.patch("/users/:email",  async (req, res) => {
+                const email = req.params.email;
+                const filter = { email: email };
+                const updateDoc = {
+                    $set: {
+                        role: "pro-user",
+                    },
+                };
+                const result = await userCollection.updateOne(filter, updateDoc);
+                res.send(result);
+                console.log('proUser made');
+            });
 
         // POST SURVEY ----------->
         app.post("/surveys", verifyToken, async (req, res) => {
@@ -111,7 +133,7 @@ async function run() {
         });
 
         // GET SURVEYOR SURVEYS BY EMAIL ------------->
-        app.get("/surveys/:email", verifyToken, async (req, res) => {
+        app.get("/surveys/:email",  async (req, res) => {
             const email = req.params.email;
             const query = { email: email };
             const result = await surveyCollection.find(query).toArray();
@@ -119,7 +141,7 @@ async function run() {
         });
 
         // UPDATE SURVEY ----------->
-        app.patch("/survey/:id", verifyToken, async (req, res) => {
+        app.patch("/survey/:id", async (req, res) => {
             const item = req.body;
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
@@ -176,11 +198,11 @@ async function run() {
         });
 
         // GET ADMIN ----------->
-        app.get("/users/admin/:email", verifyToken, async (req, res) => {
+        app.get("/users/admin/:email", async (req, res) => {
             const email = req.params.email;
-            if(email !== req.decoded.email){
-                return res.status(403).send({message:'unauthorized access'})
-            }
+            // if(email !== req.decoded.email){
+            //     return res.status(403).send({message:'unauthorized access'})
+            // }
             const query = { email: email };
             const user = await userCollection.findOne(query);
             let admin = false;
@@ -192,7 +214,7 @@ async function run() {
         });
 
         // GET SURVEYOR ----------->
-        app.get("/users/surveyor/:email", verifyToken, async (req, res) => {
+        app.get("/users/surveyor/:email",  async (req, res) => {
             const email = req.params.email;
             const query = { email: email };
             const user = await userCollection.findOne(query);
@@ -259,6 +281,7 @@ async function run() {
             const result = await paymentCollection.find().toArray()
             res.send(result)
         })
+
 
 
         // Send a ping to confirm a successful connection
