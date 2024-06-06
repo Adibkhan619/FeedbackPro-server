@@ -86,7 +86,7 @@ async function run() {
 
         // GET USER BY EMAIL ------------->
         app.get("/users/:email", async(req, res) => {
-            const id = req.params.id
+            const email = req.params.email
             const query = {email: email}
             const result = await userCollection.findOne(query)
             res.send(result)
@@ -154,7 +154,6 @@ async function run() {
                     name: item.name,
                     email: item.email,
                     id: item._id,
-                    array: item.comment
                 },
 
                 $inc: {
@@ -169,13 +168,12 @@ async function run() {
             console.log(result);
         });
 
+        // ADD COMMENT ------->
         app.patch("/survey/comment/:id", async(req, res) => {
             const id = req.params.id
             const query = {_id: new ObjectId(id)}
-            const result = await surveyCollection.updateOne(query, { $push: { comment: req.body } })
+            const result = await surveyCollection.updateOne(query, { $push: { comments: req.body } })
             res.send(result)
-            
-
         })
 
         // POST USER RESPONSE DATA ---------->
