@@ -124,6 +124,27 @@ async function run() {
             console.log("look here", result);
         });
 
+        // GET MOST VOTED SURVEY DATA--------->
+        app.get("/homeSurveys", async (req, res) => { 
+            const result = await surveyCollection
+                .find()
+                .sort({ "voteCount": -1 })
+                .limit(6)
+                .toArray();
+            res.send(result);
+        });
+
+        //GET LATEST SURVEY DATA
+        app.get("/latestData", async (req, res) => { 
+            const result = await surveyCollection
+                .find()
+                .sort({ "_id": -1 })
+                .limit(6)
+                .toArray();
+            res.send(result);
+        });
+
+
         // GET SURVEYS BY ID ---------->
         app.get("/survey/:id", async (req, res) => {
             const id = req.params.id;
@@ -154,6 +175,7 @@ async function run() {
                     name: item.name,
                     email: item.email,
                     id: item._id,
+                    status: item.status
                 },
 
                 $inc: {
@@ -173,6 +195,20 @@ async function run() {
             const id = req.params.id
             const query = {_id: new ObjectId(id)}
             const result = await surveyCollection.updateOne(query, { $push: { comments: req.body } })
+            res.send(result)
+        })
+
+        app.patch("/survey/status/:id", async(req, res) => {
+            const item = req.body
+            const id = req.params.id
+            const filter = {_id: new ObjectId(id)}
+            const updatedDoc = {
+                $set: {
+                    status: item.status,
+                    adminFeedback: item.adminFeedback
+                }
+            }
+            const result = await surveyCollection.updateOne(filter, updatedDoc)
             res.send(result)
         })
 
