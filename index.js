@@ -123,6 +123,14 @@ async function run() {
             res.send(result);
             console.log("look here", result);
         });
+        
+        // GET ALL SURVEY DATA FOR USER --------->
+        app.get("/user/surveys", async (req, res) => {
+            const result = await surveyCollection
+                .find()
+                .toArray();
+            res.send(result);
+        });
 
         // GET MOST VOTED SURVEY DATA--------->
         app.get("/homeSurveys", async (req, res) => { 
@@ -134,7 +142,7 @@ async function run() {
             res.send(result);
         });
 
-        //GET LATEST SURVEY DATA
+        //GET LATEST SURVEY DATA------------>
         app.get("/latestData", async (req, res) => { 
             const result = await surveyCollection
                 .find()
@@ -148,7 +156,7 @@ async function run() {
         // GET SURVEYS BY ID ---------->
         app.get("/survey/:id", async (req, res) => {
             const id = req.params.id;
-            const query = { _id: new ObjectId(id) };
+            const query = { _id: new ObjectId(id)};
             const result = await surveyCollection.findOne(query);
             res.send(result);
         });
@@ -229,6 +237,14 @@ async function run() {
         app.get("/response/:id", async (req, res) => {
             const id = req.params.id;
             const query = { id: id };
+            const result = await responseCollection.find(query).toArray();
+            res.send(result);
+        });
+     
+        // GET USER RESPONSE BY USER EMAIL ------------->
+        app.get("/response/user/:email", async (req, res) => {
+            const email = req.params.email;
+            const query = { email : email };
             const result = await responseCollection.find(query).toArray();
             res.send(result);
         });
