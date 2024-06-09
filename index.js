@@ -92,20 +92,6 @@ async function run() {
             res.send(result)
         })
 
-        // MAKE PRO-USER ------------>
-        app.patch("/users/:email",  async (req, res) => {
-                const email = req.params.email;
-                const filter = { email: email };
-                const updateDoc = {
-                    $set: {
-                        role: "pro-user",
-                    },
-                };
-                const result = await userCollection.updateOne(filter, updateDoc);
-                res.send(result);
-                console.log('proUser made');
-            });
-
         // POST SURVEY ----------->
         app.post("/surveys",  async (req, res) => {
             const survey = req.body;
@@ -313,7 +299,7 @@ async function run() {
         });
 
         // PAYMENT INTENT -------------->
-        app.post('/create-payment-intent', async(req, res) => {
+        app.post('/create-payment-intent',  async(req, res) => {
             const {price} = req.body
             const amount = parseInt(price * 100)
             console.log(amount, 'amount inside paymentIntent');
@@ -329,15 +315,29 @@ async function run() {
         })
 
         // POST PAYMENT INTO DB ------------>
-        app.post("/payments", async (req, res) => {
+        app.post("/payments",  async (req, res) => {
             const payment = req.body;
             const result = await paymentCollection.insertOne(payment)
             console.log('payment info', payment);
             res.send(result)
         })
 
+            // MAKE PRO-USER ------------>
+            app.patch("/users/pro/:id",  async (req, res) => {
+                const id = req.params.id;
+                const filter = { _id: new ObjectId(id) };
+                const updateDoc = {
+                    $set: {
+                        role: "pro-user",
+                    },
+                };
+                const result = await userCollection.updateOne(filter, updateDoc);
+                res.send(result);
+                console.log('proUser made');
+            });
+
         // GET PAYMENTS ---------->
-        app.get("/payments", async(req, res) => {
+        app.get("/payments", verifyToken, async(req, res) => {
             const result = await paymentCollection.find().toArray()
             res.send(result)
         })
