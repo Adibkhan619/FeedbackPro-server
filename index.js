@@ -23,8 +23,6 @@ const client = new MongoClient(uri, {
 
 async function run() {
     try {
-        // Connect the client to the server	(optional starting in v4.7)
-        //   await client.connect();
 
         //  DATABASE COLLECTIONS --------------->
         const userCollection = client.db("surveyDB").collection("users");
@@ -64,7 +62,7 @@ async function run() {
         };
 
         // GET ALL USER DATA ---------->
-        app.get("/users",  async (req, res) => {
+        app.get("/users",   async (req, res) => {
             const result = await userCollection.find().toArray();
             res.send(result);
         });
@@ -88,6 +86,14 @@ async function run() {
         app.get("/users/:email", async(req, res) => {
             const email = req.params.email
             const query = {email: email}
+            const result = await userCollection.findOne(query)
+            res.send(result)
+        })
+
+        // GET USER BY ID ------------->
+        app.get("/user/:id", async(req, res) => {
+            const id = req.params.id
+            const query = {_id: new ObjectId(id)}
             const result = await userCollection.findOne(query)
             res.send(result)
         })
@@ -337,7 +343,7 @@ async function run() {
             });
 
         // GET PAYMENTS ---------->
-        app.get("/payments", verifyToken, async(req, res) => {
+        app.get("/payments", async(req, res) => {
             const result = await paymentCollection.find().toArray()
             res.send(result)
         })
