@@ -62,7 +62,7 @@ async function run() {
         };
 
         // GET ALL USER DATA ---------->
-        app.get("/users",   async (req, res) => {
+        app.get("/users", verifyToken,   async (req, res) => {
             const result = await userCollection.find().toArray();
             res.send(result);
         });
@@ -343,7 +343,7 @@ async function run() {
             });
 
         // GET PAYMENTS ---------->
-        app.get("/payments", async(req, res) => {
+        app.get("/payments", verifyToken, async(req, res) => {
             const result = await paymentCollection.find().toArray()
             res.send(result)
         })
